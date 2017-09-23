@@ -10,10 +10,8 @@ AM_SILENT_RULES([yes])
 AC_PROG_CXX
 AM_PROG_AR
 
-# Library
-LT_INIT
-
 # Checks for libraries.
+LT_INIT
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h])
