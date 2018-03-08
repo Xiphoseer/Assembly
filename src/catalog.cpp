@@ -105,33 +105,40 @@ CatalogPointer::CatalogPointer()
 	this->entry = CatalogEntry();
 }
 
-bool CatalogPointer::valid() {
+bool CatalogPointer::valid()
+{
 	return this->file != nullptr;
 }
 
-uint32_t CatalogPointer::crc() {
+uint32_t CatalogPointer::crc()
+{
 	return this->entry.crc;
 }
 
-CatalogPointer CatalogPointer::left() {
+CatalogPointer CatalogPointer::left()
+{
 	int32_t id = this->entry.left;
 	return (id == -1) ? CatalogPointer() : CatalogPointer(this->file, id);
 }
 
-CatalogPointer CatalogPointer::right() {
+CatalogPointer CatalogPointer::right()
+{
 	int32_t id = this->entry.right;
 	return (id == -1) ? CatalogPointer() : CatalogPointer(this->file, id);
 }
 
-std::string CatalogPointer::pack() {
+std::string CatalogPointer::pack()
+{
 	return this->file->packFiles.at(this->entry.pack);
 }
 
-uint32_t CatalogPointer::data() {
+uint32_t CatalogPointer::data()
+{
 	return this->entry.data;
 }
 
-int32_t CatalogPointer::packId() {
+int32_t CatalogPointer::packId()
+{
 	return this->entry.pack;
 }
 

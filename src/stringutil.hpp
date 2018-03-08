@@ -12,3 +12,6 @@ std::string trim_copy(std::string s);
 
 void replace_all(std::string& str, const std::string& from, const std::string& to);
 std::string replace_all_copy(std::string str, const std::string& from, const std::string& to);
+
+bool ends_with(const std::string& str, const std::string& ending);
+bool starts_with(const std::string& str, const std::string& starting);

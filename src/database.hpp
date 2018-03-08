@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-
 void read(std::istream& stream, int32_t& val);
 void read(std::istream& stream, uint32_t& val);
 void read(std::istream& stream, int64_t& val);

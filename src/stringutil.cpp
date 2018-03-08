@@ -69,3 +69,43 @@ std::string replace_all_copy(std::string str, const std::string& from, const std
     replace_all(str, from, to);
     return str;
 }
+
+/* Adapted from
+ * https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+ *
+ * Question by  sofr       (https://stackoverflow.com/users/103521/sofr)
+ * Answer   by  kdt        (https://stackoverflow.com/users/99876/kdt)
+ *         and  Uli Köhler (https://stackoverflow.com/users/2597135/uli-k%c3%b6hler)
+ */
+
+/*! \brief string-ending test
+ *
+ * Tests whether a string ends with another string.
+ */
+bool ends_with (const std::string& str, const std::string& ending)
+{
+    if (str.length() >= ending.length())
+    {
+        return (0 == str.compare (str.length() - ending.length(), ending.length(), ending));
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/*! \brief string-ending test
+ *
+ * Tests whether a string ends with another string.
+ */
+bool starts_with (const std::string& str, const std::string& starting)
+{
+    if (str.length() >= starting.length())
+    {
+        return (0 == str.compare (0, starting.length(), starting));
+    }
+    else
+    {
+        return false;
+    }
+}
