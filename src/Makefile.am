@@ -9,6 +9,7 @@ libassembly_la_SOURCES = \
 	stringutil.cpp \
 	filesystem.cpp \
 	fdb_reader.cpp \
+	fdb_query.cpp \
 	filedatabase.cpp \
 	filesystem_linux.cpp
 
@@ -25,5 +26,6 @@ pkginclude_HEADERS = \
 	filesystem.hpp \
 	stringutil.hpp \
 	fdb_reader.hpp \
+	fdb_query.hpp \
 	filedatabase.hpp \
 	functional.hpp

@@ -53,16 +53,27 @@ namespace FDB
     /*! \brief Get the column with the specified name
      *
      */
-    std::pair<int,Column&> Table::column(const std::string& str)
+    std::pair<int,const Column&> Table::column(const std::string& str) const
     {
         for (int i = 0; i < columns.size(); i++)
         {
             if (columns.at(i).name == str)
             {
-                return std::pair<int,Column&>(i, columns.at(i));
+                return std::pair<int,const Column&>(i, columns.at(i));
             }
         }
         throw std::runtime_error("Column not found");
+    }
+
+    /*! \brief Get the column selector
+     *
+     *  Returns a function which, given a row, returns the field
+     *  corresponding to the given name from that row
+     */
+    std::function<const Field&(const Row&)> Table::column_sel(const std::string& str) const
+    {
+        int i = this->column(str).first;
+        return [i](const Row& r) -> const Field& { return r.fields.at(i); };
     }
 
     /*! \brief Get the slot for the specified key hash

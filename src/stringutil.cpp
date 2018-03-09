@@ -1,6 +1,7 @@
 #include "stringutil.hpp"
 
 #include <algorithm>
+#include <sstream>
 #include <cctype>
 #include <locale>
 
@@ -108,4 +109,27 @@ bool starts_with (const std::string& str, const std::string& starting)
     {
         return false;
     }
+}
+
+/* Adapted from https://stackoverflow.com/questions/5167625/splitting-a-c-stdstring-using-tokens-e-g
+ * Question by venkysmarty  (https://stackoverflow.com/users/519882/venkysmarty)
+ *         and Paul Rooney  (https://stackoverflow.com/users/1540468/paul-rooney)
+ * Answer   by Martin Stone (https://stackoverflow.com/users/44615/martin-stone)
+ *         and stackptr     (https://stackoverflow.com/users/2469027/stackptr)
+ */
+
+/*! \brief Splits a string at a delimiter
+ *
+ */
+std::vector<std::string> split(const std::string& input, const char& delim)
+{
+    std::istringstream f(input);
+    std::vector<std::string> parts;
+
+    std::string s;
+    while (std::getline(f, s, delim))
+    {
+        parts.push_back(s);
+    }
+    return parts;
 }

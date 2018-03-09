@@ -107,7 +107,9 @@ namespace FDB
         /* Get the slot for the specified primary key hash */
         Slot& slot(int primary_key);
         /* Get the column with the specified name */
-        std::pair<int,Column&> column(const std::string& name);
+        std::pair<int,const Column&> column(const std::string& name) const;
+        /* Get the selector for the specified field */
+        std::function<const Field&(const Row&)> column_sel(const std::string& name) const;
     };
 
     /*! \brief Database schema, consisting of several tables
