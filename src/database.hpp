@@ -1,122 +1,141 @@
 #pragma once
 
+/*! \file database.hpp
+ *  \brief FileDataBase for game content
+ *
+ *  Datastructures for the database which stores most game data.
+ */
+
 #include <vector>
 #include <string>
-#include <iostream>
+#include <memory>
 #include <functional>
 
-#include <stdint.h>
 
-void read(std::istream& stream, int32_t& val);
-void read(std::istream& stream, uint32_t& val);
-void read(std::istream& stream, int64_t& val);
-void read(std::istream& stream, uint32_t& val);
-void read(std::istream& stream, float& val);
-void read(std::istream& stream, std::string& val);
-void read(std::istream& stream, bool& val);
-void read(std::istream& stream, void*& val);
-
-void readField(std::istream& stream, int32_t& val);
-void readField(std::istream& stream, uint32_t& val);
-void readField(std::istream& stream, int64_t& val);
-void readField(std::istream& stream, uint64_t& val);
-void readField(std::istream& stream, float& val);
-void readField(std::istream& stream, std::string& val);
-void readField(std::istream& stream, bool& val);
-void readField(std::istream& stream, void*& val);
-
-
-typedef struct
+//! Database for the game
+namespace assembly::database
 {
-	int32_t data_type;
-	int32_t col_name_addr;
-	std::string name;
-}
-fdb_column_t;
+    /*! \brief Enum of possible datatypes
+     *
+     *  Enum used internally and in serialization to describe
+     *  what datatype a field has.
+     */
+    enum class value_type : uint8_t
+    {
+        /* Used as null value */
+        NOTHING = 0,
+        /* Standard 32bit signed integer */
+        INTEGER,
+        /* Never used as far as we know */
+        UNKNOWN1,
+        /* Standard IEEE ... single precision float */
+        FLOAT,
+        /* Text or possibly binary blob */
+        TEXT,
+        /* Boolean: (int_val != 0) */
+        BOOLEAN,
+        /* Standard 64bit signed integer, possibly DATETIME too */
+        BIGINT,
+        /* Never used as far as we know */
+        UNKNOWN2,
+        /* Text or possibly binary blob */
+        VARCHAR
+    };
 
-typedef struct
-{
-	int32_t column_header_addr;
-	int32_t some_data;
-	int32_t column_count;
-	int32_t name_addr;
-	int32_t column_data_addr;
-	int32_t row_top_header_addr;
-	int32_t row_count;
-	int32_t row_header_addr;
-	std::string name;
-	std::vector<fdb_column_t> columns;
-}
-fdb_table_t;
+    /*! \brief Smallest unit, represents a value
+     *
+     *  A field structure which can hold a value of exactly one
+     *  of the datatypes at all times.
+     */
+    struct field
+    {
+        value_type      type;
+        union
+        {
+            int32_t     int_val;
+            float       flt_val;
+            std::string str_val;
+            bool        bol_val;
+            int64_t     i64_val;
+        };
 
-struct FileDataBase
-{
-	int32_t table_count;
-	int32_t table_header_addr;
-	std::vector<fdb_table_t> tables;
+        ~field();
+        field();
+        field(const field&);
+    };
 
-	int loadFromFile(std::string filename);
-	int loadFromStream(std::istream& input);
+    /*! \brief Structure holding one table entry
+     *
+     *  Structure providing a list of fields and thereby being
+     *  a container for one 'row' in the 'table'.
+     */
+    struct row
+    {
+        std::vector<field>   fields;
+    };
 
-	fdb_table_t findTableByName(std::string name);
-};
+    /*! \brief List of actual row entries
+     *
+     *  Theoretically a linked-list of rows, this structure holds all
+     *  rows for a particular primary key.
+     */
+    struct slot
+    {
+        /* The rows in this slot */
+        std::vector<row> rows;
 
-struct FDBQuery
-{
-	std::function<bool(std::istream&)> where;
-	std::function<void(std::istream&)> select;
-};
+        /* Get all matching rows */
+        std::vector<row> query(std::function<bool(const row&)> predicate);
+    };
 
-struct FDBStatement
-{
-	fdb_table_t& table;
-	std::istream& file;
-	int32_t row_info_addr;
+    /*! \brief column description for a table
+     *
+     *  Describes a column in a table, providing a name
+     *  and default data type.
+     */
+    struct column
+    {
+        std::string name;
+        value_type  type;
+    };
 
-	FDBStatement(fdb_table_t& table, std::istream& file, int32_t index);
-	void execute(FDBQuery& query);
-	bool seek_next_row_data();
-};
+    /*! \brief Database table, consisting of column headers and row slots
+     *
+     *  Structure providing a name, a list of column headers and a list
+     *  of slots. The slot index is usually related to the first column
+     *  which is treated as a primary key. Strings are hashed by an yet
+     *  to be known method.
+     */
+    struct table
+    {
+        std::string         name;
+        std::vector<column> columns;
+        std::vector<slot>   slots;
 
-std::string fdbReadString(std::istream& stream, int32_t data);
+        //! Get the slot for the specified primary key hash
+        slot& at(int primary_key);
+        //! Get the slot for the specified primary key hash
+        const slot& at(int primary_key) const;
 
-template<typename T>
-struct TypeSelector
-{
-	std::vector<T>& list;
+        //! Get the column with the specified name
+        std::pair<int,const column&> column_def(const std::string& name) const;
+        //! Get the selector for the specified field
+        std::function<const field&(const row&)> column_sel(const std::string& name) const;
+    };
 
-	TypeSelector(std::vector<T>& list) : list(list) {};
-	void operator()(std::istream& file)
-	{
-		T entry;
-		readDB(entry, file);
-		list.push_back(entry);
-	}
-};
+    /*! \brief Database schema, consisting of several tables
+     *
+     *  An sequence of database tables sorted lexicalically
+     *  by their table name.
+     */
+    struct schema
+    {
+        //! Sorted vector of tables
+        std::vector<table> tables;
 
-template<typename T>
-struct PrimaryKeyPredicate
-{
-	T ref;
-
-	PrimaryKeyPredicate(T ref) : ref(ref) {};
-	bool operator()(std::istream& file)
-	{
-		T val;
-		readField(file, val);
-		file.seekg(-8, file.cur);
-		return val == ref;
-	}
-};
-
-int32_t hash(int32_t in, int32_t mod);
-
-template<typename E, typename K>
-std::vector<E> makeTypeQuery(fdb_table_t table, std::istream& file, K primary_key)
-{
-	std::vector<E> list;
-	FDBQuery query = {PrimaryKeyPredicate<K>(primary_key), TypeSelector<E>(list)};
-	FDBStatement stmt(table, file, hash(primary_key, table.row_count));
-	stmt.execute(query);
-	return list;
+        //! Query for a table with a particular name, may throw exception
+        table& at(const std::string& name);
+        //! Const version
+        const table& at(const std::string& name) const;
+    };
 }

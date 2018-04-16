@@ -5,148 +5,137 @@
 #include <algorithm>
 
 
-int CatalogFile::loadFromFile(std::string filename)
+namespace assembly::catalog
 {
-	std::ifstream infile(filename);
-	if (infile.is_open())
-	{
-		this->loadFromStream(infile);
-		infile.close();
-		return 0;
-	}
-	else
-	{
-		std::cerr << "Failed to load '" << filename << "' as catalog!" << std::endl;
-		return 1;
-	}
-}
+    int read_from_file(const std::string& filename, catalog_file& catalog)
+    {
+        std::ifstream infile(filename);
+        if (infile.is_open())
+        {
+            read_from_stream(infile, catalog);
+            infile.close();
+            return 0;
+        }
+        else
+        {
+            std::cerr << "Failed to load '" << filename << "' as catalog!" << std::endl;
+            return 1;
+        }
+    }
 
-int CatalogFile::loadFromStream(std::istream& input)
-{
-	/* Clean up the fields */
-	this->packFiles.clear();
-	this->files.clear();
+    int read_from_stream(std::istream& input, catalog_file& catalog)
+    {
+        /* Clean up the fields */
+        catalog.pack_files.clear();
+        catalog.files.clear();
 
-	/* Load the version */
-	input.read((char*) &(this->version), 4);
+        /* Load the version */
+        input.read((char*) &(catalog.version), 4);
 
-	/* Load the list of pack files */
-	uint32_t pkFileCount;
-	input.read((char*) &pkFileCount, 4);
-	this->packFiles.reserve(pkFileCount);
+        /* Load the list of pack files */
+        uint32_t pk_file_count;
+        input.read((char*) &pk_file_count, 4);
+        catalog.pack_files.reserve(pk_file_count);
 
-	for (int i = 0; i < pkFileCount; i++)
-	{
-		uint32_t len;
-		input.read((char*) &len, 4);
+        for (int i = 0; i < pk_file_count; i++)
+        {
+            uint32_t len;
+            input.read((char*) &len, 4);
 
-		char buf[len];
-		input.read(buf, len);
+            char buf[len];
+            input.read(buf, len);
 
-		std::string name(buf, len);
-		this->packFiles.push_back(name);
-	}
+            std::string name(buf, len);
+            catalog.pack_files.push_back(name);
+        }
 
-	/* Load the list of packed files */
-	uint32_t filesCount;
-	input.read((char*) &filesCount, 4);
-	this->files.reserve(filesCount);
+        /* Load the list of packed files */
+        uint32_t filesCount;
+        input.read((char*) &filesCount, 4);
+        catalog.files.reserve(filesCount);
 
-	for (int i = 0; i < filesCount; i++)
-	{
-		CatalogEntry entry;
-		input.read((char*) &entry.crc, 4);
-		input.read((char*) &entry.left, 4);
-		input.read((char*) &entry.right, 4);
-		input.read((char*) &entry.pack, 4);
-		input.read((char*) &entry.data, 4);
+        for (int i = 0; i < filesCount; i++)
+        {
+            catalog_entry entry;
+            input.read((char*) &entry.crc, 4);
+            input.read((char*) &entry.left, 4);
+            input.read((char*) &entry.right, 4);
+            input.read((char*) &entry.pack, 4);
+            input.read((char*) &entry.data, 4);
 
-		this->files.push_back(entry);
-	}
-}
+            catalog.files.push_back(entry);
+        }
+    }
 
-/*
- * Returns the pack-index for a given pack file name
- */
-int CatalogFile::getPackIndex(std::string packName)
-{
-	/* Sanitize input */
-	std::replace(packName.begin(), packName.end(), '/', '\\');
+    /*
+     * Returns the pack-index for a given pack file name
+     */
+    int catalog_file::get_pack_index(std::string pack_name)
+    {
+        /* Sanitize input */
+        std::replace(pack_name.begin(), pack_name.end(), '/', '\\');
 
-	for (int i = 0; i < this->packFiles.size(); i++)
-	{
-		if (packFiles.at(i) == packName) return i;
-	}
-	return -1;
-}
+        for (int i = 0; i < this->pack_files.size(); i++)
+        {
+            if (pack_files.at(i) == pack_name) return i;
+        }
+        return -1;
+    }
 
-CatalogPointer::CatalogPointer(CatalogFile* file)
-{
-	if (file->files.size() > 0)
-	{
-		int32_t root = file->files.size() / 2;
-		this->file = file;
-		this->entry = file->files.at(root);
-	}
-	else
-	{
-		this->file = nullptr;
-	}	
-}
+    catalog_ptr::catalog_ptr(catalog_file* file)
+    {
+        if (file->files.size() > 0)
+        {
+            int32_t root = file->files.size() / 2;
+            this->file = file;
+            this->entry = file->files.at(root);
+        }
+        else
+        {
+            this->file = nullptr;
+        }
+    }
 
-CatalogPointer::CatalogPointer(CatalogFile* file, int32_t index) : file(file)
-{
-	this->entry = file->files.at(index);
-}
+    catalog_ptr::catalog_ptr(catalog_file* file, int32_t index) : file(file)
+    {
+        this->entry = file->files.at(index);
+    }
 
-CatalogPointer::CatalogPointer()
-{
-	this->file = nullptr;
-	this->entry = CatalogEntry();
-}
+    catalog_ptr::catalog_ptr()
+    {
+        this->file = nullptr;
+        this->entry = catalog_entry();
+    }
 
-bool CatalogPointer::valid()
-{
-	return this->file != nullptr;
-}
+    bool catalog_ptr::valid()
+    {
+        return this->file != nullptr;
+    }
 
-uint32_t CatalogPointer::crc()
-{
-	return this->entry.crc;
-}
+    catalog_ptr catalog_ptr::left()
+    {
+        int32_t id = this->entry.left;
+        return (id == -1) ? catalog_ptr() : catalog_ptr(this->file, id);
+    }
 
-CatalogPointer CatalogPointer::left()
-{
-	int32_t id = this->entry.left;
-	return (id == -1) ? CatalogPointer() : CatalogPointer(this->file, id);
-}
+    catalog_ptr catalog_ptr::right()
+    {
+        int32_t id = this->entry.right;
+        return (id == -1) ? catalog_ptr() : catalog_ptr(this->file, id);
+    }
 
-CatalogPointer CatalogPointer::right()
-{
-	int32_t id = this->entry.right;
-	return (id == -1) ? CatalogPointer() : CatalogPointer(this->file, id);
-}
+    std::string catalog_ptr::pack()
+    {
+        return this->file->pack_files.at(this->entry.pack);
+    }
 
-std::string CatalogPointer::pack()
-{
-	return this->file->packFiles.at(this->entry.pack);
-}
-
-uint32_t CatalogPointer::data()
-{
-	return this->entry.data;
-}
-
-int32_t CatalogPointer::packId()
-{
-	return this->entry.pack;
-}
-
-CatalogPointer findByCRC(CatalogFile* file, uint32_t crc)
-{
-	CatalogPointer ptr(file);
-	while (ptr.valid() && ptr.crc() != crc) {
-		ptr = (crc > ptr.crc()) ? ptr.right() : ptr.left();
-	}
-	return ptr;
+    catalog_ptr find_by_crc(catalog_file* file, uint32_t crc)
+    {
+        catalog_ptr ptr(file);
+        while (ptr.valid() && ptr.crc() != crc)
+        {
+            ptr = (crc > ptr.crc()) ? ptr.right() : ptr.left();
+        }
+        return ptr;
+    }
 }

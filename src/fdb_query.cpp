@@ -2,14 +2,14 @@
 
 #include <algorithm>
 
-#include "filedatabase.hpp"
+#include "database.hpp"
 #include "stringutil.hpp"
 
-namespace FDB
+namespace assembly::database
 {
-    namespace Query
+    namespace query
     {
-        Like::Like (const std::vector<std::string>& parts)
+        like::like (const std::vector<std::string>& parts)
         {
             if (parts.size() == 0)
             {
@@ -28,11 +28,11 @@ namespace FDB
             }
         }
 
-        Like::Like (const std::string& query) : Like(split(query, '%')) {}
+        like::like (const std::string& query) : like(split(query, '%')) {}
 
-        bool Like::operator()(const Field& field)
+        bool like::operator()(const field& field)
         {
-            if (field.type != ValType::TEXT && field.type != ValType::VARCHAR)
+            if (field.type != value_type::TEXT && field.type != value_type::VARCHAR)
             {
                 return false;
             }
@@ -65,6 +65,15 @@ namespace FDB
             }
 
             return true;
+        }
+
+        int_eq::int_eq(int require_exact) : require_exact(require_exact)
+        {}
+
+        bool int_eq::operator()(const field& field)
+        {
+            if (field.type != value_type::INTEGER) return false;
+            return field.int_val == this->require_exact;
         }
     }
 }

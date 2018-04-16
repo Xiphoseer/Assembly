@@ -1,5 +1,11 @@
 #pragma once
 
+/*! \file filesystem.hpp
+ *  \brief filesystem tools
+ *
+ *  Utilities for searching and manipulating the filesystem
+ */
+
 #include <string>
 #include <vector>
 
@@ -58,4 +64,8 @@ namespace fs
 	std::vector<std::string>
 	files_in_dir		(	const std::string& path,
 							const std::string& filter 	);
+
+    std::vector<std::string>
+    dirs_in_dir         (   const std::string& path,
+                            const std::string& filter   );
 }

@@ -38,3 +38,17 @@ int cli::help(const char* cli, const opt_t* options, const char* desc)
 
 	return 0;
 }
+
+int cli::main(const char* cli, const opt_t* options, const char* cmd, int argc, char** argv)
+{
+    int optind = 1;
+
+    if (argc <= optind)
+    {
+        std::cout << "Usage: " << cmd << " <subcommand> ..." << std::endl;
+        return 1;
+    }
+
+    return cli::call(cli, options, argv[optind], argc - optind, argv + optind);
+}
+

@@ -111,6 +111,12 @@ bool starts_with (const std::string& str, const std::string& starting)
     }
 }
 
+bool contains(const std::string& str, const std::string& part)
+{
+    return str.find(part) != std::string::npos;
+}
+
+
 /* Adapted from https://stackoverflow.com/questions/5167625/splitting-a-c-stdstring-using-tokens-e-g
  * Question by venkysmarty  (https://stackoverflow.com/users/519882/venkysmarty)
  *         and Paul Rooney  (https://stackoverflow.com/users/1540468/paul-rooney)

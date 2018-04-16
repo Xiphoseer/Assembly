@@ -1,5 +1,11 @@
 #pragma once
 
+/*! \file stringutil.hpp
+ *  \brief String manipulation
+ *
+ *  Utilities for manipulating strings
+ */
+
 #include <string>
 #include <vector>
 
@@ -16,5 +22,6 @@ std::string replace_all_copy(std::string str, const std::string& from, const std
 
 bool ends_with(const std::string& str, const std::string& ending);
 bool starts_with(const std::string& str, const std::string& starting);
+bool contains(const std::string& str, const std::string& part);
 
 std::vector<std::string> split(const std::string& input, const char& delim);

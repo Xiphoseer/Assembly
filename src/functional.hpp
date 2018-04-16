@@ -1,5 +1,12 @@
 #pragma once
 
+/*! \file functional.hpp
+ *  \brief function composition
+ *
+ *  Utilities for combining functions
+ */
+
+//! function composition
 namespace logic
 {
     template<typename T>
