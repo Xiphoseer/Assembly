@@ -4,6 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <fnmatch.h>
+
+#include <iostream>
 
 
 namespace assembly::manifest
@@ -55,9 +58,13 @@ namespace assembly::manifest
             if (line.length() == 0) continue;
 
             // Find INI-like headers "[...]"
-            if (line.at(0) == '[' && line.at(line.length() - 1) == ']')
+            if (line.at(0) == '[')
             {
-                std::string sectionName = line.substr(1,line.length() - 2);
+                std::string sectionName;
+
+                std::stringstream header(line.substr(1));
+                std::getline(header, sectionName, ']');
+
                 if (sectionName == "version")
                 {
                     section = MF_VERSION;
@@ -113,6 +120,21 @@ namespace assembly::manifest
         {
             return test;
         }
+    }
+
+    std::vector<manifest_entry> manifest_file::query(const char* filter)
+    {
+        if (!filter) return this->files;
+
+        std::vector<manifest_entry> files;
+        std::insert_iterator<std::vector<manifest_entry>> insert_it(files, files.begin());
+
+        std::copy_if(this->files.begin(), this->files.end(), insert_it, [&](const manifest_entry& entry)
+        {
+            return fnmatch(filter, entry.path.c_str(), 0) == 0;
+        });
+
+        return files;
     }
 }
 

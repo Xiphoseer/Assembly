@@ -33,7 +33,8 @@ namespace assembly::manifest
         std::string version;
         std::vector<manifest_entry> files;
 
-        manifest_entry find(std::string path);
+        manifest_entry              find(std::string path);
+        std::vector<manifest_entry> query(const char* filter);
     };
 
     //! Load a manifest from a file
