@@ -42,6 +42,8 @@ namespace assembly::database
         VARCHAR
     };
 
+    const std::string value_type_name(const value_type& type);
+
     /*! \brief Smallest unit, represents a value
      *
      *  A field structure which can hold a value of exactly one
@@ -62,6 +64,13 @@ namespace assembly::database
         ~field();
         field();
         field(const field&);
+
+        int32_t     get_int()   const;
+        float       get_float() const;
+        std::string get_str()   const;
+        std::string get_str(const std::string& default_str) const;
+        bool        get_bool()  const;
+        int64_t     get_int64() const;
     };
 
     /*! \brief Structure holding one table entry

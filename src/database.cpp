@@ -7,11 +7,29 @@
 
 namespace assembly::database
 {
+    const std::string value_type_name(const value_type& type)
+    {
+        switch(type)
+        {
+            case value_type::NOTHING: return "NOTHING";
+            case value_type::BOOLEAN: return "BOOLEAN";
+            case value_type::INTEGER: return "INTEGER";
+            case value_type::FLOAT:   return "FLOAT";
+            case value_type::BIGINT:  return "BIGINT";
+            case value_type::VARCHAR: return "VARCHAR";
+            case value_type::TEXT:    return "TEXT";
+
+            case value_type::UNKNOWN1:    return "[UNKNOWN|1]";
+            case value_type::UNKNOWN2:    return "[UNKNOWN|2]";
+        }
+
+        throw std::runtime_error("Can't get name for unknown type " + (uint8_t) type);
+    }
+
     field::field() : type(value_type::NOTHING) {}
 
     field::field(const field& field) : type(field.type)
     {
-        //std::cout << "Copy" << (int) field.type << std::endl;
         switch(type)
         {
             case value_type::BOOLEAN:
@@ -23,7 +41,6 @@ namespace assembly::database
                 new(&str_val) std::string();
                 str_val = field.str_val; break;
         }
-        //std::cout << "Done" << std::endl;
     }
 
     field::~field()
@@ -35,6 +52,62 @@ namespace assembly::database
             case value_type::VARCHAR:
             case value_type::TEXT:     str_val.~string();
         }
+    }
+
+    int32_t field::get_int() const
+    {
+      if (this->type == value_type::INTEGER) {
+        return this->int_val;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as integer");
+      }
+    }
+
+    float field::get_float() const
+    {
+      if (this->type == value_type::FLOAT) {
+        return this->flt_val;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as float");
+      }
+    }
+
+    std::string field::get_str() const
+    {
+      if (this->type == value_type::TEXT || this->type == value_type::VARCHAR) {
+        return this->str_val;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as string");
+      }
+    }
+
+    std::string field::get_str(const std::string& default_str) const
+    {
+      if (this->type == value_type::TEXT || this->type == value_type::VARCHAR) {
+        return this->str_val;
+      } else if (this->type == value_type::NOTHING) {
+        return default_str;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as string");
+      }
+    }
+
+    bool field::get_bool() const
+    {
+      if (this->type == value_type::BOOLEAN) {
+        return this->bol_val;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as boolean");
+      }
+    }
+
+    int64_t field::get_int64() const
+    {
+      if (this->type == value_type::BIGINT) {
+        return this->i64_val;
+      } else {
+        throw std::runtime_error("Could not read " + value_type_name(this->type) + " field as long integer");
+      }
     }
 
     /*! \brief filters this slot using a given predicate
