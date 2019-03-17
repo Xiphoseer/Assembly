@@ -15,4 +15,15 @@ namespace utf
     std::u16string from_utf8(const std::string& utf8string);
     //! Convert a utf-16 string to utf-8
     std::string to_utf8(const std::u16string& utf16string);
+
+    //! Convert a codepage to a utf-8 string
+
+    struct iconv_to_utf8
+    {
+      void* data;
+
+      std::string operator()(const std::string& src);
+      iconv_to_utf8(const std::string& codepage);
+      ~iconv_to_utf8();
+    };
 }

@@ -15,6 +15,9 @@ namespace assembly::common
         float z;
 
         static const vector3f ZERO;
+
+        vector3f(const float& x, const float& y, const float& z);
+        vector3f();
     };
 
     inline bool operator== (const vector3f& a, const vector3f& b)
