@@ -22,7 +22,7 @@ namespace utf
     {
       void* data;
 
-      std::string operator()(const std::string& src);
+      std::string operator()(const std::string& src) const;
       iconv_to_utf8(const std::string& codepage);
       ~iconv_to_utf8();
     };

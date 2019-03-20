@@ -36,7 +36,7 @@ namespace utf
       free(this->data);
     }
 
-    std::string iconv_to_utf8::operator()(const std::string& src)
+    std::string iconv_to_utf8::operator()(const std::string& src) const
     {
       iconv_t conv = *((iconv_t*) this->data);
       const char* in = src.c_str();
