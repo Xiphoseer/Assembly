@@ -1,6 +1,7 @@
 #include "utf.hpp"
 #include <locale>
 #include <sstream>
+#include <iomanip>
 #include <codecvt>
 #include <iconv.h>
 
@@ -28,7 +29,7 @@ namespace utf
     {
       this->data = malloc(sizeof(iconv_t));
       iconv_t* p_cd = (iconv_t*) this->data;
-      *p_cd = iconv_open(codepage.c_str(), "UTF-8");
+      *p_cd = iconv_open("UTF-8", codepage.c_str());
     }
 
     iconv_to_utf8::~iconv_to_utf8()
@@ -52,8 +53,18 @@ namespace utf
       {
         size_t r = iconv(conv, (char**) &in, &src_remain, &out, &out_remain);
 
-        if (r == -1) {
-          throw std::runtime_error("Conversion error");
+        if (r == -1 && errno != E2BIG) {
+          size_t off = src.length() - src_remain;
+          int ch = (uint8_t) src.at(off);
+          res << std::string(buf, 128 - out_remain);
+          std::string problem;
+          if (errno == EINVAL) problem = "An invalid multibyte sequence has been encountered";
+          else if (errno == EILSEQ) problem = "An incomplete multibyte sequence has been encountered";
+          else problem = "An unknown conversion error has been encountered";
+          std::stringstream errstr("");
+          errstr << problem << " at '" << std::hex << ch << "' ("
+                 << std::dec << off << ") after '" << res.str() << "'";
+          throw std::runtime_error(errstr.str());
         }
         res << std::string(buf, 128 - out_remain);
         out_remain = 128;
