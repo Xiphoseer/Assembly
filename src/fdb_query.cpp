@@ -75,5 +75,15 @@ namespace assembly::database
             if (field.type != value_type::INTEGER) return false;
             return field.int_val == this->require_exact;
         }
+
+        const_iterator for_table(const table& tbl)
+        {
+            return const_iterator(tbl.slots.begin(), tbl.slots.end());
+        }
+
+        iterator for_table(table& tbl)
+        {
+            return iterator(tbl.slots.begin(), tbl.slots.end());
+        }
     }
 }

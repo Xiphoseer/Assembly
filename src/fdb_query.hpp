@@ -135,13 +135,6 @@ namespace assembly::database::query
     typedef iterator_base<const slot, const row,
         std::vector<slot>::const_iterator, std::vector<row>::const_iterator> const_iterator;
 
-    const_iterator for_table(const table& tbl)
-    {
-        return const_iterator(tbl.slots.begin(), tbl.slots.end());
-    }
-
-    iterator for_table(table& tbl)
-    {
-        return iterator(tbl.slots.begin(), tbl.slots.end());
-    }
+    const_iterator for_table(const table& tbl);
+    iterator for_table(table& tbl);
 }
