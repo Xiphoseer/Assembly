@@ -25,19 +25,19 @@ namespace utf
         return conv.to_bytes(utf16string);
     }
 
-    iconv_to_utf8::iconv_to_utf8(const std::string& codepage)
+    iconv_op_t::iconv_op_t(const std::string& toCodepage, const std::string& fromCodepage)
     {
       this->data = malloc(sizeof(iconv_t));
       iconv_t* p_cd = (iconv_t*) this->data;
-      *p_cd = iconv_open("UTF-8", codepage.c_str());
+      *p_cd = iconv_open(toCodepage.c_str(), fromCodepage.c_str());
     }
 
-    iconv_to_utf8::~iconv_to_utf8()
+    iconv_op_t::~iconv_op_t()
     {
       free(this->data);
     }
 
-    std::string iconv_to_utf8::operator()(const std::string& src) const
+    std::string iconv_op_t::operator()(const std::string& src) const
     {
       iconv_t conv = *((iconv_t*) this->data);
       const char* in = src.c_str();
@@ -73,4 +73,10 @@ namespace utf
 
       return res.str();
     }
+
+    iconv_to_utf8::iconv_to_utf8(const std::string& fromCodepage)
+    : iconv_op_t("UTF-8", fromCodepage) {}
+
+    iconv_from_utf8::iconv_from_utf8(const std::string& toCodepage)
+    : iconv_op_t(toCodepage, "UTF-8") {}
 }
