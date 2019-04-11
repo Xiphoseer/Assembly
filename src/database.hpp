@@ -65,6 +65,8 @@ namespace assembly::database
         field();
         field(const field&);
 
+        std::string to_string() const;
+
         int32_t     get_int()   const;
         float       get_float() const;
         std::string get_str()   const;

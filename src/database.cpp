@@ -54,6 +54,22 @@ namespace assembly::database
         }
     }
 
+    std::string field::to_string() const
+    {
+        switch(type)
+        {
+            case value_type::NOTHING: return "_null";
+            case value_type::BOOLEAN: return this->int_val != 0 ? "_true" : "_false";
+            case value_type::INTEGER: return std::to_string(this->int_val);
+            case value_type::FLOAT:   return std::to_string(this->flt_val);
+            case value_type::BIGINT:  return std::to_string(this->i64_val);
+            case value_type::VARCHAR:
+            case value_type::TEXT:    return this->str_val;
+        }
+
+        throw std::runtime_error("Can't get name for unknown type " + (uint8_t) type);
+    }
+
     int32_t field::get_int() const
     {
       if (this->type == value_type::INTEGER) {
