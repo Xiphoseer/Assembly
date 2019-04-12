@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+
+#include "utf.hpp"
 
 
 namespace assembly::database
@@ -64,7 +67,7 @@ namespace assembly::database
             case value_type::FLOAT:   return std::to_string(this->flt_val);
             case value_type::BIGINT:  return std::to_string(this->i64_val);
             case value_type::VARCHAR:
-            case value_type::TEXT:    return this->str_val;
+            case value_type::TEXT:    return utf::from_latin_1(this->str_val);
         }
 
         throw std::runtime_error("Can't get name for unknown type " + (uint8_t) type);
@@ -152,7 +155,9 @@ namespace assembly::database
                 return std::pair<int,const column&>(i, columns.at(i));
             }
         }
-        throw std::runtime_error("column not found");
+        std::stringstream err_str;
+        err_str << "column `" << this->name << "`.`" << str << "` not found";
+        throw std::runtime_error(err_str.str());
     }
 
     /*! \brief Get the column selector

@@ -74,9 +74,13 @@ namespace utf
       return res.str();
     }
 
-    iconv_to_utf8::iconv_to_utf8(const std::string& fromCodepage)
+    iconv_to_utf8_t::iconv_to_utf8_t(const std::string& fromCodepage)
     : iconv_op_t("UTF-8", fromCodepage) {}
 
-    iconv_from_utf8::iconv_from_utf8(const std::string& toCodepage)
+    iconv_from_utf8_t::iconv_from_utf8_t(const std::string& toCodepage)
     : iconv_op_t(toCodepage, "UTF-8") {}
+
+    std::string latin_1_cp = "ISO-8859-1";
+    iconv_to_utf8_t from_latin_1(latin_1_cp);
+    iconv_from_utf8_t to_latin_1(latin_1_cp);
 }

@@ -33,16 +33,20 @@ namespace utf
     };
 
     //! Convert a codepage to a utf-8 string
-    struct iconv_to_utf8 : iconv_op_t
+    struct iconv_to_utf8_t : iconv_op_t
     {
       //! Constructor with a source codepage
-      iconv_to_utf8(const std::string& fromCodepage);
+      iconv_to_utf8_t(const std::string& fromCodepage);
     };
 
     //! Convert a utf-8 string to some codepage
-    struct iconv_from_utf8 : iconv_op_t
+    struct iconv_from_utf8_t : iconv_op_t
     {
       //! Constructor with a target codepage
-      iconv_from_utf8(const std::string& toCodepage);
+      iconv_from_utf8_t(const std::string& toCodepage);
     };
+
+    extern std::string latin_1_cp;
+    extern iconv_to_utf8_t from_latin_1;
+    extern iconv_from_utf8_t to_latin_1;
 }
